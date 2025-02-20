@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 import re
 import time
 
@@ -12,8 +13,7 @@ from zendriver.cdp.input_ import dispatch_key_event
 
 login_name = "2lolacc1795@gmail.com"
 login_password = "lolacc1795"
-logged_in = False
-PROMPT = """Extract info into this format in json, 
+PROMPT_BASE = """Extract info into this format in json, 
             if a field has multiple answers, turn them into a list ['like', 'this'].
             Don't add additional fields to the json other than specified by my prompt!!!!!
             Leave field empty if no answer!!!!!
@@ -24,7 +24,7 @@ PROMPT = """Extract info into this format in json,
                 job_title: 
                 contract_type: 
                 home_office(make sure to recognize 'yes', 'no' or 'partial'): 
-                salary_max: 
+                salary_max(only numeric value, no letters): 
                 technologies: 
                 }
 
@@ -50,6 +50,18 @@ tmp_text = """
                 If you're passionate about software development and eager to contribute to a collaborative team environment, we encourage you to apply today and be part of our innovative projects!
 """
 
+def normalize_json(data):
+    for key, value in data.items():
+        if key in ["contract_type", "technologies"]:
+            if value is None:
+                data[key] = []
+            elif isinstance(value, str):
+                data[key] = [value]
+    return data
+
+async def check_server_busy():
+    pass
+
 async def login_with_credentials(tab: zd.Tab):
     email_field = await tab.find("Phone number / email address")
     password_field = await tab.select("[type*=password]")
@@ -73,55 +85,80 @@ async def login_with_credentials(tab: zd.Tab):
 
     return False
 
-async def write_message(tab: zd.Tab):
-    print("Writing Message...")
-    message_field = await tab.find("Message DeepSeek")
-    await message_field.mouse_click()
-    await message_field.send_keys(PROMPT + tmp_text)
-
-    # press enter
+async def press_enter(tab: zd.Tab):
     await tab.send(dispatch_key_event(type_='rawKeyDown', key='Enter', code='Enter', windows_virtual_key_code=13))
     await tab.send(dispatch_key_event(type_='keyUp', key='Enter', code='Enter', windows_virtual_key_code=13))
 
-    # wait for answer
-    while True:
-        check = await tab.select_all('[class*=token]', timeout=60)
-        if "}" in check[-1].text:
-            print("Answer found.")
-            break
-        print("Waiting for answer...")
-        await tab.sleep(3)
+async def wait_answer(tab: zd.Tab, max_attempts=3):
+    attempt = 1
+    while attempt <= max_attempts:
+        try:
+            check = await tab.select_all('[class*=token]', timeout=random.randint(120,180))
+            if "}" in check[-1].text:
+                print("Answer found.")
+                return True
 
-async def get_info(tab: zd.Tab):
-    await write_message(tab)
-    answer_block = await tab.select_all('[class*=token]')
+        except Exception as e:
+            print(f"Error: {e}")
+            
+            try:
+                check = await tab.find('The server is busy. Please try again later.')
+                if check:
+                    print("The server is busy...")
+                    all_buttons = await tab.select_all('[class*=ds-icon-button]')
+                    await all_buttons[4].mouse_click() # click 6th button (reload button)
+                    print("Reloading answer.")
 
-    json_string = ''
-    for a in answer_block:
-        json_string += a.text.lower()
+            except Exception as e:
+                print(f"[{attempt}]Reloading page...")
+                attempt += 1
+                await tab.reload()
     
-    json_data = json.loads(json_string)
+    return False
 
-    return json_data
+async def write_message(tab: zd.Tab, job_body: str):
+    print("Writing Message...")
+    message_field = await tab.find("Message DeepSeek")
+    await message_field.mouse_click()
+    await message_field.send_keys(PROMPT_BASE + job_body)
 
-async def AI_scrape_website():
+    await press_enter(tab)
+
+    # wait for answer
+    if await wait_answer(tab):
+        return True
+    return False
+
+async def get_info(tab: zd.Tab, job_body: str):
+    while True:
+        # click new chat
+        new_chat_button = await tab.find("New chat")
+        await new_chat_button.click()
+        
+        if await write_message(tab, job_body):
+            break
+
+    answer_block = await tab.select_all('[class*=token]')
+    dict_string = ''
+    for a in answer_block:
+        dict_string += a.text.lower()
+    
+    dict_data = json.loads(dict_string)
+
+    return dict_data
+
+async def AI_scrape_website(browser: zd.Browser, ai_tab: zd.Tab, job_body: str, LOGGED_IN=False):
     try:
-        browser = await zd.start()
-        tab = await browser.get('https://chat.deepseek.com/')
+        if not LOGGED_IN:
+            if not await login_with_credentials(ai_tab):
+                print("Login failed.")
+                return False
+            print("Logged in with credentials.")
 
-        if not await login_with_credentials(tab):
-            print("Login failed.")
-            return False
-        print("Logged in with credentials.")
+        job_dict = await get_info(ai_tab, job_body)
+        job_dict = normalize_json(job_dict)
+        return(job_dict)
 
-        job_json = await get_info(tab)
-        print(job_json)
-
-
-        await tab.sleep(5)
-        await tab.reload()
-        await tab.sleep(5)
-        await browser.stop()
     except Exception as e:
         print(f"Error during login: {e}")
 
@@ -141,5 +178,5 @@ async def AI_scrape_website():
     # field = await tab.find('"job_title:"')
     # print(field.text)
 
-if __name__ == '__main__':
-    asyncio.run(AI_scrape_website())
+# if __name__ == '__main__':
+#     asyncio.run(AI_scrape_website(tmp_text))
