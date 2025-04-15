@@ -73,9 +73,6 @@ class Profesia:
         (id, posting date, location, min salary, positions, company)
 
         """
-        with  open('app\scraper\position_tl.json', 'r', encoding='utf-8') as file:
-            position_mapping = json.load(file)
-
         print("LF overall-info")
         overall_info = await safe_element_search(tab, selector="[class*=overall-info]")
         print("Found overall-info")
@@ -149,8 +146,8 @@ class Profesia:
                     position = overall_info_strings[i + 1].strip()
                     position = position.split('>')[1].split('<')[0]
 
-                    if position in position_mapping:  # Check if the position exists in the mapping
-                        mapped_position = position_mapping[position]  # Get the mapped value
+                    if position in self.position_mapping:  # Check if the position exists in the mapping
+                        mapped_position = self.position_mapping[position]  # Get the mapped value
                         data['position'].append(mapped_position.lower())
                     else:
                         data['position'].append(position.lower())
@@ -178,15 +175,11 @@ class Profesia:
         Gets text body of the job offer
         
         """
-        check = await tab.query_selector(".maintextearea")   # maintextarea is for the custom templates
-        if check:
-            while True:
-                javascript = await tab.query_selector(".maintextearea > script")
-                if javascript:
-                    await javascript.remove_from_dom()
-                    javascript = None
-                else:
-                    break
+        main_text = await tab.query_selector(".maintextearea")   # maintextarea is for the custom templates
+        if main_text:
+            scripts = await main_text.query_selector_all("script")
+            for script in scripts:
+                    await script.remove_from_dom()
             body = await tab.select(".maintextearea")
 
         else:
@@ -208,7 +201,7 @@ class Profesia:
         """
         Navigates to next page of job offers
         Returns False if next page button not found
-        
+
         """
         await self.tab.activate()
 

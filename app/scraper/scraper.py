@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Optional
 import zendriver as zd
@@ -24,14 +25,15 @@ class Scraper:
                 if self.db_manager.check_duplicate(self.db_session, job_url):
                     continue
                 
-                raw_job = await self.profesia.get_job_details(job_url)
-                ai_results = await self.deepseek.send_prompt(raw_job["job_body"])
+                try:
+                    raw_job = await self.profesia.get_job_details(job_url)
+                    ai_results = await self.deepseek.send_prompt(raw_job["job_body"])
+                    job_data = {**raw_job, **ai_results, "url": job_url}
+                    self.db_manager.save_job_data(self.db_session, job_data)
+                except Exception as e:
+                    print(f"Error processing job {job_url}: {e}")
 
-                job_data = {**raw_job, **ai_results, "url": job_url}
-
-                self.db_manager.save_job_data(self.db_session, job_data)
-
-                time.sleep(30)
+                await asyncio.sleep(30)
             
             if not await self.profesia.next_page():
                 break              
