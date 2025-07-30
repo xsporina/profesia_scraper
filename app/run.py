@@ -9,7 +9,8 @@ from core.database import sessionLocal
 
 
 async def main():
-    browser = await zd.start(chrome_args=settings.CHROME_ARGS, headless=False)
+    print("Starting the application...")
+    browser = await zd.start(chrome_args=settings.CHROME_ARGS, headless=False, no_sandbox=True)
 
     try:
         profesia = Profesia(browser)

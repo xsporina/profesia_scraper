@@ -22,7 +22,22 @@ class Settings(BaseSettings):
     CHROME_ARGS: list[str] = [
         "--disable-background-timer-throttling",
         "--disable-backgrounding-occluded-windows",
-        "--disable-renderer-backgrounding"
+        "--disable-renderer-backgrounding",
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        "--headless=new",  # Use new headless mode (less detectable)
+        
+        # Anti-detection flags
+        "--disable-blink-features=AutomationControlled",
+        "--disable-extensions",
+        "--disable-plugins",
+        "--disable-default-apps",
+        "--disable-web-security",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--window-size=1920,1080",
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     ]
 
     JOB_LIST_URL: str = "https://www.profesia.sk/en/work/information-technology/"
