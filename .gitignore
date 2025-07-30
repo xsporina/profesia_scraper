@@ -162,5 +162,8 @@ cython_debug/
 # VScode
 .vscode
 
+# Alembic
+alembic.ini
+
 # Others
 analysis
