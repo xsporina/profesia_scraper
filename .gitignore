@@ -161,3 +161,6 @@ cython_debug/
 
 # VScode
 .vscode
+
+# Others
+analysis
