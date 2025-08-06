@@ -24,7 +24,8 @@ jobs:
     - name: Pull latest code
       run: |
         cd ${{ secrets.WORK_DIR }}
-        sudo git pull origin main
+        git config --global --add safe.directory ${{ secrets.WORK_DIR }}
+        git pull origin main
     
     - name: Checkout
       uses: actions/checkout@v4
