@@ -15,7 +15,7 @@ jobs:
     - name: Debug
       run: |
         echo "Current dir: $(pwd)"
-        echo "Work dir: ${{ secrets.WORK_DIR }}
+        echo "Work dir: ${{ secrets.WORK_DIR }}"
         echo "User: $(whoami)"
         echo "Docker status:"
         docker --version
