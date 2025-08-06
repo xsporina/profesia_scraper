@@ -5,27 +5,36 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
+  
 jobs:
 
-  build:
-
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: self-hosted
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Start SSH agent
-      uses: webfactory/ssh-agent@v0.9.0
+    - name: Checkout
+      uses: actions/checkout@v4
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        path: ${{ secrets.WORK_DIR }}
 
-    - name: Add server to known_hosts
-      run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Deploy via SSH
+    - name: Stop existing containers
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd ${{ secrets.WORK_DIR }} &&
-          docker compose pull &&
-          docker compose up -d --build
-        "
+        cd ${{ secrets.WORK_DIR }}
+        docker-compose down || echo "No containers to stop"
+
+    - name: Remove old images
+      run: |
+        cd ${{ secrets.WORK_DIR }}
+        docker-compose down --rmi all || echo "No containers to remove"
+        
+    - name: Build and start containers
+      run: |
+        cd ${{ secrets.WORK_DIR }}
+        docker-compose up -d --build --wait
+
+    - name: Verify deployment
+      run: |
+        cd ${{ secrets.WORK_DIR }}
+        docker-compose ps
+        echo "Deployment completed"
+      
