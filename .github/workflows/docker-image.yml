@@ -33,11 +33,11 @@ jobs:
     - name: Build and start containers
       run: |
         cd ${{ secrets.WORK_DIR }}
-        sudo docker-compose up -d --build --wait
+        docker-compose up -d --build --wait
 
     - name: Verify deployment
       run: |
         cd ${{ secrets.WORK_DIR }}
-        sudo docker-compose ps
+        docker-compose ps
         echo "Deployment completed"
       
