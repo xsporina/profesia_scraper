@@ -7,7 +7,7 @@ import zendriver as zd
 from core.config import settings
 from core.database import sessionLocal
 
-# test
+# testttt
 
 async def main():
     print("Starting the application...")
