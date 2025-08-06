@@ -24,24 +24,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Stop existing containers
-      run: |
-        cd ${{ secrets.WORK_DIR }}
-        docker-compose down || echo "No containers to stop"
-
     - name: Remove old images
       run: |
         cd ${{ secrets.WORK_DIR }}
-        docker-compose down --rmi all || echo "No containers to remove"
+        sudo docker-compose down --rmi all || echo "No containers to remove"
         
     - name: Build and start containers
       run: |
         cd ${{ secrets.WORK_DIR }}
-        docker-compose up -d --build --wait
+        sudo docker-compose up -d --build --wait
 
     - name: Verify deployment
       run: |
         cd ${{ secrets.WORK_DIR }}
-        docker-compose ps
+        sudo docker-compose ps
         echo "Deployment completed"
       
