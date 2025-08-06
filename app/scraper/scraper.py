@@ -33,7 +33,7 @@ class Scraper:
                 except Exception as e:
                     print(f"Error processing job {job_url}: {e}")
 
-                await asyncio.sleep(30)
+                await asyncio.sleep(60)
             
             if not await self.profesia.next_page():
                 break              
