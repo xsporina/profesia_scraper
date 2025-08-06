@@ -24,7 +24,7 @@ jobs:
     - name: Pull latest code
       run: |
         cd ${{ secrets.WORK_DIR }}
-        git pull origin main
+        sudo git pull origin main
     
     - name: Checkout
       uses: actions/checkout@v4
