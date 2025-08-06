@@ -20,15 +20,15 @@ jobs:
         echo "Docker status:"
         docker --version
         docker-compose --version
+
+    - name: Pull latest code
+      run: |
+        cd ${{ secrets.WORK_DIR }}
+        git pull origin main
     
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Remove old images
-      run: |
-        cd ${{ secrets.WORK_DIR }}
-        sudo docker-compose down --rmi all || echo "No containers to remove"
-        
     - name: Build and start containers
       run: |
         cd ${{ secrets.WORK_DIR }}
