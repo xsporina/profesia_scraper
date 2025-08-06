@@ -12,6 +12,15 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Debug
+      run: |
+        echo "Current dir: $(pwd)"
+        echo "Work dir: ${{ secrets.WORK_DIR }}
+        echo "User: $(whoami)"
+        echo "Docker status:"
+        docker --version
+        docker-compose --version
+    
     - name: Checkout
       uses: actions/checkout@v4
       with:
