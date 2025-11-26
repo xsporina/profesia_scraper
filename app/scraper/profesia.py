@@ -37,7 +37,7 @@ class Profesia:
         
         """
         self.tab = await self.browser.get(self.scrape_url, new_tab=True)
-        
+        await self.tab.set_window_size(1920, 1080)
         await handle_cookies(self.tab, "Accept necessary")
 
     async def get_page_jobs_urls(self) -> list[str]:

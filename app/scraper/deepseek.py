@@ -1,3 +1,4 @@
+import asyncio
 import json
 import random
 
@@ -34,8 +35,8 @@ class Deepseek:
     
     async def initialize(self):
         self.tab = await self.browser.get(settings.DEEPSEEK_URL, new_tab=True)
-
         await self._login_with_credentials()
+        await self.tab.set_window_size(1920, 1080)
         await handle_cookies(self.tab, "Necessary cookies only")
     
     async def _login_with_credentials(self):
@@ -80,6 +81,7 @@ class Deepseek:
         
         """
         new_chat_button = await self.tab.find("New chat")
+        await new_chat_button.scroll_into_view()
         await new_chat_button.click()
     
     async def _send_message(self, job_body: str):
