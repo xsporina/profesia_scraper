@@ -34,12 +34,20 @@ class Deepseek:
             """
     
     async def initialize(self):
+        """
+        Initialize the deepseek website
+        
+        """
         self.tab = await self.browser.get(settings.DEEPSEEK_URL, new_tab=True)
         await self._login_with_credentials()
         await self.tab.set_window_size(1920, 1080)
         await handle_cookies(self.tab, "Necessary cookies only")
     
     async def _login_with_credentials(self):
+        """
+        Login into deepseek
+        
+        """
         email_field = await self.tab.find("Phone number / email address")
         password_field = await self.tab.select("[type*=password]")
 
