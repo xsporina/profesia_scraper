@@ -47,7 +47,9 @@ class Deepseek:
 
         print("Logging in with credentials...")
         await email_field.mouse_click()
+        print("Entering name ", settings.DEEPSEEK_NAME)
         await email_field.send_keys(settings.DEEPSEEK_NAME)
+        print("Entering password")
         await password_field.send_keys(settings.DEEPSEEK_PASSWORD)
 
         login_button = await self.tab.find("Log in")
